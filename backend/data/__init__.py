@@ -1,0 +1,2 @@
+"""Static astrological data tables."""
+
