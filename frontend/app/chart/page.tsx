@@ -4,7 +4,7 @@ import { CalendarDays, Camera, MapPin, Sparkles, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const NEPALI_MONTHS = [
   { value: 1, name: 'Baishakh' },
