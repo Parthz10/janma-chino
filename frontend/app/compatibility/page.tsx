@@ -60,7 +60,14 @@ export default function CompatibilityPage() {
     const moonSign = Math.floor(moonLon / 30) + 1;
     const moonNakIdx = Math.floor(moonLon / (40 / 3)) + 1;
     const moonPada = Math.floor((moonLon % (40 / 3)) / (10 / 3)) + 1;
-    return { moonSign, moonNakIdx, moonPada };
+    return {
+      moonSign,
+      moonNakIdx,
+      moonPada,
+      moon_sign: moonSign,
+      moon_nakshatra_index: moonNakIdx,
+      moon_pada: moonPada
+    };
   };
 
   // Convert English planet names to Devanagari shorthand for KundaliChart
@@ -71,8 +78,10 @@ export default function CompatibilityPage() {
     };
     return Object.entries(positions).map(([name, pos]: [string, any]) => ({
       name: abbreviationMap[name] || name.slice(0, 2),
-      signNumber: pos.sign_num || 1,
-      degree: pos.longitude % 30,
+      signNumber: pos.sign || pos.sign_num || 1,
+      degree: pos.degree_in_sign ?? pos.longitude % 30,
+      house: pos.house,
+      retrograde: Boolean(pos.retrograde),
     }));
   };
 
@@ -196,11 +205,11 @@ export default function CompatibilityPage() {
         brideName: mBrideName || 'Bride',
         groomName: mGroomName || 'Groom',
         brideChart: {
-          ascendantSign: bData.positions.Lagna?.sign_num || 1,
+          ascendantSign: bData.positions.Lagna?.sign || bData.positions.Lagna?.sign_num || 1,
           placements: getPlacementsFormatted(bData.positions)
         },
         groomChart: {
-          ascendantSign: gData.positions.Lagna?.sign_num || 1,
+          ascendantSign: gData.positions.Lagna?.sign || gData.positions.Lagna?.sign_num || 1,
           placements: getPlacementsFormatted(gData.positions)
         },
         koota: compData.koota,

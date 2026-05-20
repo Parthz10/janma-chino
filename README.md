@@ -25,6 +25,10 @@
 * **Compatibility Synergy AI**: Evaluates Kundali synergy beyond simple points to produce a descriptive relationship report.
 * **Multimodal Vision Chart Parser**: Upload any printed/drawn Kundali chart image, and the platform's vision engine will parse the positions and generate an instant AI explanation.
 
+### 4. ⚡ Multi-Provider AI Fallback & 100% Uptime Local Engine
+* **Bulletproof Fault Tolerance**: Seamlessly routes AI calls from **Google Gemini** to **OpenAI (gpt-4o-mini)** or **DeepSeek (deepseek-chat)** in under a second if rate limits (`429`) or server overloads (`503`) occur.
+* **100% Offline/Local Net**: If all cloud providers are unavailable or out of quota, an intelligent **local rule-based parser & generator** instantly compiles a beautifully written, highly personalized, and fully schema-compliant Vedic analysis and Guru chat in both English and native Nepali with zero delay.
+
 ---
 
 ## 🛠️ Tech Stack

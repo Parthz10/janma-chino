@@ -66,3 +66,18 @@ NAKSHATRAS = {
     for i, row in enumerate(_names)
 }
 
+NAKSHATRA_DATA = {
+    idx: {
+        "name_en": data["name"],
+        "lord": data["lord"],
+        "yoni": data["yoni"],
+        "gana": data["gana"],
+        "nadi": data["nadi"],
+    }
+    for idx, data in NAKSHATRAS.items()
+}
+
+def lookup_nakshatra(nakshatra_id: int) -> dict:
+    if not 1 <= nakshatra_id <= 27:
+        raise ValueError("Nakshatra range index must loop between 1 and 27.")
+    return NAKSHATRA_DATA[nakshatra_id]

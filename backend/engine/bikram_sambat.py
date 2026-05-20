@@ -1,12 +1,39 @@
-"""Bikram Sambat conversion utility with rule-based modern offset approximation."""
+"""Bikram Sambat conversion utility backed by a calendar library when installed."""
 
 from datetime import date
 
+def convert_bs_to_ad(bs_year: int, bs_month: int, bs_day: int) -> date:
+    try:
+        from bikram_sambat import date as BSDate
+    except ImportError as exc:
+        raise RuntimeError(
+            "bikram-sambat is not installed. Run pip install bikram-sambat or rebuild Docker."
+        ) from exc
+
+    try:
+        nepali_date = BSDate(bs_year, bs_month, bs_day)
+        return nepali_date.togregorian()
+    except ValueError as exc:
+        raise ValueError(f"Invalid Bikram Sambat date parameters: {exc}") from exc
+
+def get_nepali_month_matrix(bs_year: int, bs_month: int):
+    try:
+        from bikram_sambat.helpers import monthcalendar
+    except ImportError as exc:
+        raise RuntimeError(
+            "bikram-sambat is not installed. Run pip install bikram-sambat or rebuild Docker."
+        ) from exc
+    return monthcalendar(year=bs_year, month=bs_month)
+
 def bs_to_ad(year: int, month: int, day: int) -> date:
-    ad_year = year - 57 if month < 9 or (month == 9 and day < 16) else year - 56
-    return date(ad_year, month, min(day, 28))
+    return convert_bs_to_ad(year, month, day)
 
 def ad_to_bs(value: date) -> dict:
-    bs_year = value.year + 57 if value.month < 4 or (value.month == 4 and value.day < 14) else value.year + 56
-    return {"year": bs_year, "month": value.month, "day": value.day, "calendar": "BS"}
-
+    try:
+        from bikram_sambat import date as BSDate
+    except ImportError as exc:
+        raise RuntimeError(
+            "bikram-sambat is not installed. Run pip install bikram-sambat or rebuild Docker."
+        ) from exc
+    bs_value = BSDate.fromgregorian(value)
+    return {"year": bs_value.year, "month": bs_value.month, "day": bs_value.day, "calendar": "BS"}

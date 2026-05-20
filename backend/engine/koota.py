@@ -15,6 +15,46 @@ def count_nak(from_idx: int, to_idx: int) -> int:
 def distance(from_sign: int, to_sign: int) -> int:
     return ((to_sign - from_sign) % 12) + 1
 
+def is_natural_friend(a: str, b: str) -> bool:
+    return relation(a, b) == "friend" and relation(b, a) == "friend"
+
+def evaluate_ashta_koota_exceptions(bride: dict, groom: dict, categories: dict, raw_scores: dict) -> tuple[dict, dict]:
+    final_scores = dict(categories)
+    b_nak = NAKSHATRAS[bride["moon_nakshatra_index"]]
+    g_nak = NAKSHATRAS[groom["moon_nakshatra_index"]]
+    b_sign = SIGNS[bride["moon_sign"]]
+    g_sign = SIGNS[groom["moon_sign"]]
+    b_lord = b_sign["lord"]
+    g_lord = g_sign["lord"]
+    cancellations = {}
+    active = []
+
+    if raw_scores["Nadi"] == 0:
+        if bride["moon_nakshatra_index"] == groom["moon_nakshatra_index"] and bride.get("moon_pada") != groom.get("moon_pada"):
+            final_scores["Nadi"] = 8
+            cancellations["Nadi"] = "Same Nakshatra with different Pada"
+        elif b_lord == g_lord or is_natural_friend(b_lord, g_lord):
+            final_scores["Nadi"] = 8
+            cancellations["Nadi"] = "Rashi Adhipati Maitri"
+        else:
+            active.append("Nadi Dosha")
+
+    if raw_scores["Bhakoot"] == 0:
+        if b_lord == g_lord or is_natural_friend(b_lord, g_lord):
+            final_scores["Bhakoot"] = 7
+            cancellations["Bhakoot"] = "Friendly or identical Moon sign lords"
+        else:
+            active.append("Bhakoot Dosha")
+
+    if categories["Gana"] == 0 and b_nak["gana"] != g_nak["gana"]:
+        if b_lord == g_lord or is_natural_friend(b_lord, g_lord):
+            final_scores["Gana"] = 3
+            cancellations["Gana"] = "Temperament conflict softened by friendly Moon sign lords"
+        else:
+            active.append("Gana Dosha")
+
+    return final_scores, {"active": active, "cancellations": cancellations}
+
 def ashta_koota(bride: dict, groom: dict) -> dict:
     b_nak, g_nak = NAKSHATRAS[bride["moon_nakshatra_index"]], NAKSHATRAS[groom["moon_nakshatra_index"]]
     b_sign, g_sign = SIGNS[bride["moon_sign"]], SIGNS[groom["moon_sign"]]
@@ -32,5 +72,20 @@ def ashta_koota(bride: dict, groom: dict) -> dict:
     same_nadi = b_nak["nadi"] == g_nak["nadi"]
     same_nakshatra_distinct_pada = bride["moon_nakshatra_index"] == groom["moon_nakshatra_index"] and bride.get("moon_pada") != groom.get("moon_pada")
     nadi = 0 if same_nadi and not same_nakshatra_distinct_pada else 8
-    categories = {"Varna": varna, "Vashya": vashya, "Tara": tara, "Yoni": yoni, "Graha Maitri": graha, "Gana": gana, "Bhakoot": bhakoot, "Nadi": nadi}
-    return {"categories": categories, "total": sum(categories.values()), "max": 36, "doshas": {"gana": gana == 0, "bhakoot": bhakoot == 0, "nadi": nadi == 0}}
+    raw_categories = {"Varna": varna, "Vashya": vashya, "Tara": tara, "Yoni": yoni, "Graha Maitri": graha, "Gana": gana, "Bhakoot": bhakoot, "Nadi": nadi}
+    categories, dosha_details = evaluate_ashta_koota_exceptions(bride, groom, raw_categories, raw_categories)
+    return {
+        "categories": categories,
+        "raw_categories": raw_categories,
+        "total": sum(categories.values()),
+        "raw_total": sum(raw_categories.values()),
+        "max": 36,
+        "doshas": {
+            "gana": "Gana Dosha" in dosha_details["active"],
+            "bhakoot": "Bhakoot Dosha" in dosha_details["active"],
+            "nadi": "Nadi Dosha" in dosha_details["active"],
+        },
+        "dosha_details": dosha_details,
+        "moon_sign_lords": {"bride": b_sign["lord"], "groom": g_sign["lord"]},
+        "bhakoot_distance": bh_dist,
+    }
